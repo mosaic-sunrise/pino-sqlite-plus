@@ -1,6 +1,6 @@
 {
-  "name": "pino-sqlite",
-  "version": "1.0.0",
+  "name": "pino-sqlite-plus",
+  "version": "0.1.0",
   "description": "A Pino transport that stores logs to SQLite for queryable log storage",
   "type": "module",
   "main": "dist/index.js",
@@ -21,8 +21,22 @@
     "typecheck": "tsc --noEmit"
   },
   "keywords": ["pino", "sqlite", "logging", "transport"],
-  "author": "",
+  "author": "mosaic-sunrise",
   "license": "NoHarm",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mosaic-sunrise/pino-sqlite-plus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mosaic-sunrise/pino-sqlite-plus/issues"
+  },
+  "homepage": "https://github.com/mosaic-sunrise/pino-sqlite-plus#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "peerDependencies": {
     "pino": ">=8.0.0"
   },
