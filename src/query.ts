@@ -1,70 +1,12 @@
 import Database from 'better-sqlite3';
-import { levelToString } from './db.js';
+import { parseLevel } from './levels.js';
+import { parseDuration } from './duration.js';
 import type { ComparisonOperator, LogEntry, ParsedLogEntry, PinoLog } from './types.js';
 
-// Helper to safely escape SQL identifiers using SQLite's printf
+// Safely escape SQL identifiers using SQLite's printf
 function escapeIdentifier(db: Database.Database, identifier: string): string {
   const result = db.prepare("SELECT printf('%w', ?)").pluck().get(identifier) as string;
   return `"${result}"`;
-}
-
-/**
- * Convert level input (string name, numeric value, or string format) to storage format
- */
-function normalizeLevel(level: string | number): string {
-  if (typeof level === 'number') {
-    return levelToString(level);
-  }
-
-  // If it's already in the format "50-error", pass it through
-  if (/^\d+-/.test(level)) {
-    return level;
-  }
-
-  // Map string names to numeric values, then convert
-  const nameMap: Record<string, number> = {
-    trace: 10,
-    debug: 20,
-    info: 30,
-    warn: 40,
-    error: 50,
-    fatal: 60
-  };
-
-  const numericLevel = nameMap[level.toLowerCase()];
-  if (numericLevel === undefined) {
-    throw new Error(
-      `Invalid level: ${level}. Use trace, debug, info, warn, error, fatal, or a numeric value`
-    );
-  }
-
-  return levelToString(numericLevel);
-}
-
-// Helper to parse human-readable duration strings (e.g., '60s', '5m', '1h', '2d', '1w', '3mo', '1y')
-function parseDuration(duration: string): number {
-  const match = duration.match(/^(\d+)(ms|s|m|h|d|w|mo|y)$/);
-  if (!match) {
-    throw new Error(
-      `Invalid duration format: ${duration}. Use format like 1h, 30m, 1d, 1w, 3mo, 1y`
-    );
-  }
-
-  const value = parseInt(match[1], 10);
-  const unit = match[2];
-
-  const multipliers: Record<string, number> = {
-    ms: 1,
-    s: 1000,
-    m: 60 * 1000,
-    h: 60 * 60 * 1000,
-    d: 24 * 60 * 60 * 1000,
-    w: 7 * 24 * 60 * 60 * 1000,
-    mo: 30 * 24 * 60 * 60 * 1000, // approximate: 30 days
-    y: 365 * 24 * 60 * 60 * 1000 // approximate: 365 days
-  };
-
-  return value * multipliers[unit];
 }
 
 export class LogQuery {
@@ -99,7 +41,7 @@ export class LogQuery {
    * @param operator - Comparison operator (default: '>=')
    */
   level(level: string | number, operator: ComparisonOperator = '>='): this {
-    const levelStr = normalizeLevel(level);
+    const levelStr = parseLevel(level);
     this.conditions.push(`level ${operator} ?`);
     this.params.push(levelStr);
     return this;

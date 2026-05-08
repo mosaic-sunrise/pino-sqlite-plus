@@ -1,58 +1,13 @@
 #!/usr/bin/env node
 
 import { LogQuery } from './query.js';
-import { levelToString } from './db.js';
+import { LEVELS, parseLevel, extractLevelLabel } from './levels.js';
+import { parseDuration } from './duration.js';
 
 const DEFAULT_DB_PATH = './logs.db';
 
 function getDefaultDbPath(): string {
   return process.env.PINO_SQLITE_DB ?? DEFAULT_DB_PATH;
-}
-
-const LEVEL_NAMES: Record<string, number> = {
-  trace: 10,
-  debug: 20,
-  info: 30,
-  warn: 40,
-  error: 50,
-  fatal: 60
-};
-
-const LEVEL_LABELS: Record<number, string> = {
-  10: 'TRACE',
-  20: 'DEBUG',
-  30: 'INFO',
-  40: 'WARN',
-  50: 'ERROR',
-  60: 'FATAL'
-};
-
-/**
- * Parse level string format (e.g., "50-error") to extract numeric value
- */
-function parseLevelString(levelStr: string): number {
-  const match = levelStr.match(/^(\d+)-/);
-  if (match) {
-    return parseInt(match[1], 10);
-  }
-  throw new Error(`Invalid level format: ${levelStr}`);
-}
-
-/**
- * Extract label from level string format (e.g., "50-error" -> "ERROR")
- */
-function extractLevelLabel(levelStr: string): string {
-  const match = levelStr.match(/^\d+-(.+)$/);
-  if (match) {
-    const label = match[1].toUpperCase();
-    return label;
-  }
-  // Fallback: try to parse as number
-  const num = parseInt(levelStr, 10);
-  if (!isNaN(num)) {
-    return LEVEL_LABELS[num] ?? `L${num}`;
-  }
-  return levelStr.toUpperCase();
 }
 
 function printHelp(): void {
@@ -82,53 +37,6 @@ Examples:
   pino-sqlite-query query --name api --search "failed"
   pino-sqlite-query stats
 `);
-}
-
-function parseDuration(duration: string): number {
-  const match = duration.match(/^(\d+)(ms|s|m|h|d|w|mo|y)$/);
-  if (!match) {
-    throw new Error(
-      `Invalid duration format: ${duration}. Use format like 1h, 30m, 1d, 1w, 3mo, 1y`
-    );
-  }
-
-  const value = parseInt(match[1], 10);
-  const unit = match[2];
-
-  const multipliers: Record<string, number> = {
-    ms: 1,
-    s: 1000,
-    m: 60 * 1000,
-    h: 60 * 60 * 1000,
-    d: 24 * 60 * 60 * 1000,
-    w: 7 * 24 * 60 * 60 * 1000,
-    mo: 30 * 24 * 60 * 60 * 1000, // approximate: 30 days
-    y: 365 * 24 * 60 * 60 * 1000 // approximate: 365 days
-  };
-
-  return value * multipliers[unit];
-}
-
-function parseLevel(level: string): string {
-  // If already in format "50-error", pass through
-  if (/^\d+-/.test(level)) {
-    return level;
-  }
-
-  const num = LEVEL_NAMES[level.toLowerCase()];
-  if (num !== undefined) {
-    return levelToString(num);
-  }
-
-  // Try parsing as number
-  const parsed = parseInt(level, 10);
-  if (!isNaN(parsed)) {
-    return levelToString(parsed);
-  }
-
-  throw new Error(
-    `Invalid level: ${level}. Use trace, debug, info, warn, error, fatal or a number`
-  );
 }
 
 interface QueryOptions {
@@ -234,10 +142,6 @@ function parseQueryArgs(args: string[]): QueryOptions | null {
   };
 }
 
-function formatLevel(level: string): string {
-  return extractLevelLabel(level);
-}
-
 function formatTime(time: number): string {
   return new Date(time).toISOString();
 }
@@ -286,7 +190,7 @@ function runQuery(args: string[]): void {
 
       for (const log of logs) {
         const time = formatTime(log.time);
-        const lvl = formatLevel(log.level);
+        const lvl = extractLevelLabel(log.level);
         const nameStr = log.name ? `[${log.name}]` : '';
         const msg = log.msg ?? '';
         console.log(`${time} ${lvl.padEnd(5)} ${nameStr} ${msg}`);
@@ -331,11 +235,10 @@ function runStats(args: string[]): void {
 
   try {
     const total = query.reset().count();
-    const levels = ['10-trace', '20-debug', '30-info', '40-warn', '50-error', '60-fatal'];
     const counts: Record<string, number> = {};
 
-    for (const level of levels) {
-      counts[formatLevel(level)] = query.reset().level(level, '=').count();
+    for (const { stored, label } of LEVELS) {
+      counts[label] = query.reset().level(stored, '=').count();
     }
 
     const names = query.distinct('name');

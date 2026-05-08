@@ -1,21 +1,7 @@
 import Database from 'better-sqlite3';
 import { createSchema } from './schema.js';
+import { levelToString } from './levels.js';
 import type { DatabaseInstance, PinoLog, TransportOptions } from './types.js';
-
-/**
- * Convert Pino's numeric level to string format (e.g., 50 -> "50-error")
- */
-export function levelToString(level: number): string {
-  const levelMap: Record<number, string> = {
-    10: '10-trace',
-    20: '20-debug',
-    30: '30-info',
-    40: '40-warn',
-    50: '50-error',
-    60: '60-fatal'
-  };
-  return levelMap[level] ?? `${level}`;
-}
 
 export function initDatabase(opts: TransportOptions): DatabaseInstance {
   const db = new Database(opts.dbPath);
