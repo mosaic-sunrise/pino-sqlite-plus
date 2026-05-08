@@ -154,4 +154,13 @@ describe('pino-sqlite transport', () => {
 
     query.close();
   });
+
+  it('rejects invalid table names and JSON paths at schema time', () => {
+    expect(() => initDatabase({ dbPath: TEST_DB, tableName: 'logs; DROP TABLE x' })).toThrow(
+      /Invalid table name/
+    );
+    expect(() => initDatabase({ dbPath: TEST_DB, extractFields: { col: "$.x'); DROP" } })).toThrow(
+      /Invalid JSON path/
+    );
+  });
 });

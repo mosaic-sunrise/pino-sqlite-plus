@@ -7,9 +7,7 @@ const JSON_PATH_RE = /^\$([.[][A-Za-z0-9_*\]]+)*$/;
 
 function validateIdentifier(kind: string, name: string): void {
   if (!IDENTIFIER_RE.test(name)) {
-    throw new Error(
-      `Invalid ${kind}: ${JSON.stringify(name)}. Must match ${IDENTIFIER_RE.source}`
-    );
+    throw new Error(`Invalid ${kind}: ${JSON.stringify(name)}. Must match ${IDENTIFIER_RE.source}`);
   }
 }
 
