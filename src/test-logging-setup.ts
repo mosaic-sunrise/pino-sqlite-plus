@@ -15,23 +15,21 @@ export interface TestContextSetter {
   clearContext: () => void;
 }
 
+/**
+ * Create a setter that drives the mixin via process-global state.
+ *
+ * setContext()/clearContext() are intended for sequential test runners
+ * (vitest/jest with single-threaded test execution). For concurrent code,
+ * wrap work in runWithTestContext() to use AsyncLocalStorage instead —
+ * the mixin checks that first and falls back to the global.
+ */
 export function setupTestContextLogging(opts: SetupTestContextLoggingOptions): TestContextSetter {
   const { testRunId } = opts;
+  const context: TestContext = { testRunId };
 
   return {
-    setContext: () => {
-      const context: TestContext = { testRunId };
-      // Set the global context for the mixin to use
-      setActiveContext(context);
-      // Also set in AsyncLocalStorage for scenarios where it works
-      runWithTestContext(context, () => {
-        // Context is now available via both mechanisms
-      });
-    },
-
-    clearContext: () => {
-      setActiveContext(undefined);
-    }
+    setContext: () => setActiveContext(context),
+    clearContext: () => setActiveContext(undefined)
   };
 }
 
