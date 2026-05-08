@@ -1,18 +1,15 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 export interface TestContext {
-  testRunId: string
+  testRunId: string;
 }
 
-export const testContextStorage = new AsyncLocalStorage<TestContext>()
+export const testContextStorage = new AsyncLocalStorage<TestContext>();
 
 export function getTestContext(): TestContext | undefined {
-  return testContextStorage.getStore()
+  return testContextStorage.getStore();
 }
 
-export function runWithTestContext<T>(
-  context: TestContext,
-  callback: () => T
-): T {
-  return testContextStorage.run(context, callback)
+export function runWithTestContext<T>(context: TestContext, callback: () => T): T {
+  return testContextStorage.run(context, callback);
 }

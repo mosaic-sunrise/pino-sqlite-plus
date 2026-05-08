@@ -1,0 +1,7 @@
+dist/
+node_modules/
+coverage/
+*.db
+*.db-wal
+*.db-shm
+package-lock.json
