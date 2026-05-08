@@ -76,9 +76,9 @@ const log = pino(
 The LLM can then query only what it needs:
 
 ```ts
-import { createQueryHelper } from '@mosaic-code/pino-sqlite-plus';
+import { createLogQuery } from '@mosaic-code/pino-sqlite-plus';
 
-const query = createQueryHelper('./logs.db');
+const query = createLogQuery('./logs.db');
 
 // Show only errors and above (can use numeric or string name)
 const errors = query.level('error', '>=').find();
@@ -130,7 +130,7 @@ interface TransportOptions {
 ### Query API
 
 ```ts
-const query = createQueryHelper('./logs.db', 'logs');
+const query = createLogQuery('./logs.db', 'logs');
 
 // Filter methods
 query.name('my-logger');
@@ -196,7 +196,7 @@ The simplest approach uses automatic context decoration - no need to manually ad
 ```typescript
 import pino from 'pino';
 import pinoSqlite from '@mosaic-code/pino-sqlite-plus';
-import { createTestContextMixin, setupTestContextLogging } from '@mosaic-code/pino-sqlite-plus';
+import { createTestContextMixin, createTestContextSetter } from '@mosaic-code/pino-sqlite-plus';
 
 // Generate a test run ID (suggested format: branch + timestamp)
 const branch = process.env.GIT_BRANCH || 'unknown';
@@ -220,7 +220,7 @@ const log = pino(
   })
 );
 
-export const testContext = setupTestContextLogging({
+export const testContext = createTestContextSetter({
   testRunId: TEST_RUN_ID
 });
 

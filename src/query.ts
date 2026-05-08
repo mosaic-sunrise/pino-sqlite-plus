@@ -63,27 +63,35 @@ export class LogQuery {
   }
 
   /**
-   * Filter logs from the last N milliseconds, duration string, or since a specific date
-   * @param value - Can be:
-   *   - number: milliseconds (e.g., 60000)
-   *   - string: human-readable duration (e.g., '60s', '5m', '1h', '2d', '1w', '3mo', '1y')
-   *   - Date: filter logs since this date
+   * Filter logs from a point in time backwards to now.
+   *
+   * @param value
+   *   - `Date`: include logs at or after this date.
+   *   - `string`: human-readable duration ago (e.g. `'60s'`, `'5m'`, `'1h'`, `'2d'`, `'1w'`, `'3mo'`, `'1y'`).
+   *   - `number`: milliseconds **ago** (NOT a unix timestamp). Prefer {@link withinLast}
+   *     for clarity, or pass a `Date` for an explicit point in time.
    */
   since(value: Date | number | string): this {
     let ms: number;
 
     if (value instanceof Date) {
-      // Date: calculate milliseconds from now back to that date
       ms = Date.now() - value.getTime();
     } else if (typeof value === 'string') {
-      // String: parse duration (e.g., '60s', '1h')
       ms = parseDuration(value);
     } else {
-      // Number: use as-is (milliseconds)
       ms = value;
     }
 
     return this.timeRange(Date.now() - ms);
+  }
+
+  /**
+   * Filter logs from the last N milliseconds or duration string.
+   * Equivalent to {@link since} with the same arg, but the name makes the
+   * "duration ago" semantic explicit.
+   */
+  withinLast(value: number | string): this {
+    return this.since(value);
   }
 
   /**
@@ -180,7 +188,9 @@ export class LogQuery {
   }
 
   /**
-   * Get distinct values for a column
+   * Get distinct non-null values for a column. NULL rows are filtered out.
+   * Note: this is independent of the chained filter conditions — `where()` /
+   * `level()` etc. do not narrow this query.
    */
   distinct(column: string): string[] {
     const safeColumn = escapeIdentifier(this.db, column);
@@ -233,8 +243,8 @@ export class LogQuery {
 }
 
 /**
- * Create a new LogQuery instance
+ * Create a new {@link LogQuery} instance bound to the given database file.
  */
-export function createQueryHelper(dbPath: string, tableName = 'logs'): LogQuery {
+export function createLogQuery(dbPath: string, tableName = 'logs'): LogQuery {
   return new LogQuery(dbPath, tableName);
 }

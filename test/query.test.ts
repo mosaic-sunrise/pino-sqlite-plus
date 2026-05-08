@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Database from 'better-sqlite3';
-import { createQueryHelper, LogQuery } from '../src/query.js';
+import { createLogQuery, LogQuery } from '../src/query.js';
 import { createSchema } from '../src/schema.js';
 import { insertBatch } from '../src/db.js';
 import { cleanup } from './test-utils.js';
@@ -55,14 +55,14 @@ describe('LogQuery', () => {
   afterAll(runCleanup);
 
   it('should find all logs', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const logs = query.find();
     expect(logs).toHaveLength(6);
     query.close();
   });
 
   it('should filter by name', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const logs = query.name('database').find();
     expect(logs).toHaveLength(3);
     expect(logs.every((l) => l.name === 'database')).toBe(true);
@@ -70,7 +70,7 @@ describe('LogQuery', () => {
   });
 
   it('should filter by level', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const errors = query.level(50, '=').find();
     expect(errors).toHaveLength(2);
@@ -89,7 +89,7 @@ describe('LogQuery', () => {
   });
 
   it('should filter by time range', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const now = Date.now();
 
     const recentLogs = query.timeRange(now - 1000000).find();
@@ -100,7 +100,7 @@ describe('LogQuery', () => {
   });
 
   it('should filter using since() with number (milliseconds)', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const lastHour = query.since(3600000).find();
     expect(lastHour.length).toBeGreaterThanOrEqual(5);
@@ -109,7 +109,7 @@ describe('LogQuery', () => {
   });
 
   it('should filter using since() with string duration', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     // Test various duration formats
     const lastHour = query.since('1h').find();
@@ -140,7 +140,7 @@ describe('LogQuery', () => {
   });
 
   it('should filter using since() with Date object', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const oneHourAgo = new Date(Date.now() - 3600000);
     const lastHour = query.since(oneHourAgo).find();
@@ -155,7 +155,7 @@ describe('LogQuery', () => {
   });
 
   it('should produce equivalent results with different since() parameter types', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const withNumber = query.since(60000).find();
     query.reset();
@@ -173,7 +173,7 @@ describe('LogQuery', () => {
   });
 
   it('should handle invalid duration string format', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     expect(() => {
       query.since('invalid').find();
@@ -191,7 +191,7 @@ describe('LogQuery', () => {
   });
 
   it('should handle Date in the future (returns no results)', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const futureDate = new Date(Date.now() + 3600000);
     const results = query.since(futureDate).find();
@@ -201,7 +201,7 @@ describe('LogQuery', () => {
   });
 
   it('should handle zero and negative values', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     // Zero means "since now", which should return very few or no logs
     // (only logs exactly at this moment, which is unlikely)
@@ -217,7 +217,7 @@ describe('LogQuery', () => {
   });
 
   it('should search message content', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const errorLogs = query.messageContains('Error').find();
     expect(errorLogs).toHaveLength(2);
@@ -227,7 +227,7 @@ describe('LogQuery', () => {
   });
 
   it('should query JSON properties', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const queryLogs = query.where('$.query', 'SELECT * FROM users').find();
     expect(queryLogs).toHaveLength(1);
@@ -237,7 +237,7 @@ describe('LogQuery', () => {
   });
 
   it('should query extracted columns', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const userLogs = query.where('user_id', '42').find();
     expect(userLogs).toHaveLength(1);
@@ -247,7 +247,7 @@ describe('LogQuery', () => {
   });
 
   it('should check property existence with has()', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const logsWithUserId = query.has('$.userId').find();
     expect(logsWithUserId).toHaveLength(2);
@@ -256,7 +256,7 @@ describe('LogQuery', () => {
   });
 
   it('should apply limit and offset', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const limited = query.limit(2).find();
     expect(limited).toHaveLength(2);
@@ -270,7 +270,7 @@ describe('LogQuery', () => {
   });
 
   it('should count matching logs', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const total = query.count();
     expect(total).toBe(6);
@@ -287,7 +287,7 @@ describe('LogQuery', () => {
   });
 
   it('should get distinct values', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const names = query.distinct('name');
     expect(names).toContain('api');
@@ -298,7 +298,7 @@ describe('LogQuery', () => {
   });
 
   it('should combine multiple filters', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const logs = query.name('database').level(50, '=').messageContains('timeout').find();
 
@@ -309,7 +309,7 @@ describe('LogQuery', () => {
   });
 
   it('should order results', () => {
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const ascending = query.orderBy('time', 'ASC').find();
     expect(ascending[0].time).toBeLessThan(ascending[5].time);

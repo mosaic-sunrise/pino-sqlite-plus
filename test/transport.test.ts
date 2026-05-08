@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createQueryHelper } from '../src/query.js';
+import { createLogQuery } from '../src/query.js';
 import { initDatabase, insertBatch, closeDatabase } from '../src/db.js';
 import { cleanup } from './test-utils.js';
 import type { PinoLog } from '../src/types.js';
@@ -25,7 +25,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', logs);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const results = query.find();
 
     expect(results).toHaveLength(2);
@@ -49,7 +49,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', logs);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const count = query.count();
 
     expect(count).toBe(100);
@@ -68,7 +68,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', logs);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const dbLogs = query.name('database').find();
     expect(dbLogs).toHaveLength(1);
@@ -100,7 +100,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', logs);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
 
     const userLogs = query.where('user_id', '42').find();
     expect(userLogs).toHaveLength(2);
@@ -119,7 +119,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', []);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const count = query.count();
 
     expect(count).toBe(0);
@@ -144,7 +144,7 @@ describe('pino-sqlite transport', () => {
     insertBatch(db, 'logs', logs);
     closeDatabase(db);
 
-    const query = createQueryHelper(TEST_DB);
+    const query = createLogQuery(TEST_DB);
     const results = query.find();
 
     expect(results).toHaveLength(1);

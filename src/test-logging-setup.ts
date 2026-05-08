@@ -6,7 +6,7 @@ import {
 } from './test-context.js';
 import { setActiveContext } from './mixin.js';
 
-export interface SetupTestContextLoggingOptions {
+export interface CreateTestContextSetterOptions {
   testRunId: string;
 }
 
@@ -23,7 +23,7 @@ export interface TestContextSetter {
  * wrap work in runWithTestContext() to use AsyncLocalStorage instead —
  * the mixin checks that first and falls back to the global.
  */
-export function setupTestContextLogging(opts: SetupTestContextLoggingOptions): TestContextSetter {
+export function createTestContextSetter(opts: CreateTestContextSetterOptions): TestContextSetter {
   const { testRunId } = opts;
   const context: TestContext = { testRunId };
 

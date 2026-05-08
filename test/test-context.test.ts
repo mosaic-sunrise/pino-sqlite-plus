@@ -4,7 +4,7 @@ import {
   runWithTestContext,
   testContextStorage,
   createTestContextMixin,
-  setupTestContextLogging
+  createTestContextSetter
 } from '../src/test-logging-setup.js';
 import { getActiveContext } from '../src/mixin.js';
 import type { TestContext } from '../src/test-logging-setup.js';
@@ -139,16 +139,16 @@ describe('createTestContextMixin', () => {
   });
 });
 
-describe('setupTestContextLogging', () => {
+describe('createTestContextSetter', () => {
   it('should create a context setter with the provided testRunId', () => {
-    const testContext = setupTestContextLogging({ testRunId: 'setup-test' });
+    const testContext = createTestContextSetter({ testRunId: 'setup-test' });
 
     expect(testContext.setContext).toBeInstanceOf(Function);
     expect(testContext.clearContext).toBeInstanceOf(Function);
   });
 
   it('should set context when setContext is called', () => {
-    const testContext = setupTestContextLogging({ testRunId: 'context-setter-test' });
+    const testContext = createTestContextSetter({ testRunId: 'context-setter-test' });
 
     testContext.setContext();
 
@@ -161,7 +161,7 @@ describe('setupTestContextLogging', () => {
   });
 
   it('should clear context when clearContext is called', () => {
-    const testContext = setupTestContextLogging({ testRunId: 'clear-test' });
+    const testContext = createTestContextSetter({ testRunId: 'clear-test' });
 
     testContext.setContext();
     expect(getActiveContext()?.testRunId).toBe('clear-test');
@@ -171,8 +171,8 @@ describe('setupTestContextLogging', () => {
   });
 
   it('should create different contexts for different testRunIds', () => {
-    const testContext1 = setupTestContextLogging({ testRunId: 'first-run' });
-    const testContext2 = setupTestContextLogging({ testRunId: 'second-run' });
+    const testContext1 = createTestContextSetter({ testRunId: 'first-run' });
+    const testContext2 = createTestContextSetter({ testRunId: 'second-run' });
 
     testContext1.setContext();
     expect(getActiveContext()?.testRunId).toBe('first-run');

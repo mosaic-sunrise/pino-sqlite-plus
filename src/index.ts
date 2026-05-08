@@ -1,5 +1,5 @@
 export { default } from './transport.js';
-export { LogQuery, createQueryHelper } from './query.js';
+export { LogQuery, createLogQuery } from './query.js';
 export type {
   TransportOptions,
   PinoLog,
@@ -8,16 +8,15 @@ export type {
   ComparisonOperator
 } from './types.js';
 
-// Test context exports
 export { createTestContextMixin } from './mixin.js';
 export {
-  setupTestContextLogging,
+  createTestContextSetter,
   testContextStorage,
   getTestContext,
   runWithTestContext
 } from './test-logging-setup.js';
 export type {
   TestContext,
-  SetupTestContextLoggingOptions,
+  CreateTestContextSetterOptions,
   TestContextSetter
 } from './test-logging-setup.js';
