@@ -12,7 +12,7 @@ A Pino transport that stores logs to SQLite for queryable log storage, with a fl
 ## Installation
 
 ```bash
-npm install pino-sqlite-plus
+npm install @mosaic-code/pino-sqlite-plus
 ```
 
 ## Recommended Setups
@@ -24,7 +24,7 @@ For development, you typically want logs visible in the console while also persi
 ```ts
 import pino from 'pino'
 import multistream from 'pino-multi-stream' // npm install pino-multi-stream
-import pinoSqlite from 'pino-sqlite-plus'
+import pinoSqlite from '@mosaic-code/pino-sqlite-plus'
 
 const log = pino(
   {
@@ -53,14 +53,14 @@ For LLM applications or agents, disable stdout entirely to keep logs silent whil
 
 ```ts
 import pino from 'pino'
-import pinoSqlite from 'pino-sqlite-plus'
+import pinoSqlite from '@mosaic-code/pino-sqlite-plus'
 
 const log = pino(
   {
     level: 'trace', // Capture ALL levels - LLM can filter later
   },
   pino.transport({
-    target: 'pino-sqlite-plus',
+    target: '@mosaic-code/pino-sqlite-plus',
     options: {
       dbPath: './logs.db',
       // Optional: extract specific fields for faster queries
@@ -76,7 +76,7 @@ const log = pino(
 The LLM can then query only what it needs:
 
 ```ts
-import { createQueryHelper } from 'pino-sqlite-plus'
+import { createQueryHelper } from '@mosaic-code/pino-sqlite-plus'
 
 const query = createQueryHelper('./logs.db')
 
@@ -196,11 +196,11 @@ The simplest approach uses automatic context decoration - no need to manually ad
 **vitest.setup.ts:**
 ```typescript
 import pino from 'pino'
-import pinoSqlite from 'pino-sqlite-plus'
+import pinoSqlite from '@mosaic-code/pino-sqlite-plus'
 import {
   createTestContextMixin,
   setupTestContextLogging
-} from 'pino-sqlite-plus'
+} from '@mosaic-code/pino-sqlite-plus'
 
 // Generate a test run ID (suggested format: branch + timestamp)
 const branch = process.env.GIT_BRANCH || 'unknown'
@@ -211,7 +211,7 @@ const log = pino({
   level: 'trace',
   mixin: createTestContextMixin(), // Auto-injects test context + NODE_ENV
 }, pino.transport({
-  target: 'pino-sqlite-plus',
+  target: '@mosaic-code/pino-sqlite-plus',
   options: {
     dbPath: './dev-logging.db',
     extractFields: {

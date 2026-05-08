@@ -1,5 +1,5 @@
 {
-  "name": "pino-sqlite-plus",
+  "name": "@mosaic-code/pino-sqlite-plus",
   "version": "0.1.0",
   "description": "A Pino transport that stores logs to SQLite for queryable log storage",
   "type": "module",
