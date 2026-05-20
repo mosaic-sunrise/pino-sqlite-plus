@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.2] - 2026-05-18
+
+### Fixed
+
+- `pino.transport({ target: '@mosaic-code/pino-sqlite-plus' })` no longer fails with `ERR_PACKAGE_PATH_NOT_EXPORTED`. Pino spawns transports in a worker thread that resolves the package via `require()`, but the previous build only shipped ESM. The package now ships a dual ESM + CJS build with both `import` and `require` conditions in `exports`.
+
+### Changed
+
+- Build switched from `tsc` to `tsup`. Emits `dist/index.js` (ESM), `dist/index.cjs` (CJS), and matching `.d.ts` / `.d.cts` declarations for both, plus dual builds of the CLI.
+- `package.json`: `main` → `dist/index.cjs`, added `module` → `dist/index.js`, `exports."."` now declares `types`, `import`, and `require` conditions.
+
 ## [0.1.1] - 2026-05-08
 
 ### Breaking
