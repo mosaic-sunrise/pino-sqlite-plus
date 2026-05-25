@@ -59,7 +59,7 @@ function addExtractedColumn(
   validateIdentifier('column name', columnName);
   validateJsonPath(jsonPath);
 
-  const columns = db.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
+  const columns = db.prepare(`PRAGMA table_xinfo(${tableName})`).all() as Array<{ name: string }>;
   const columnExists = columns.some((col) => col.name === columnName);
 
   if (!columnExists) {
